@@ -101,3 +101,7 @@ Currently, the default is for particle excitation. If you want to do target exci
 As of now, magnetic transitions are not included. They will be, once I get around to it.
 
 All cross sections are given in b/sr.
+
+# CoulEx information
+
+For further information on the theory behind Coulomb excitation, see the early chapters of the [GOSIA manual](http://www-user.pas.rochester.edu/~gosia/mediawiki/index.php/Gosia_Manual), or _Electromagnetic excitation_, by K. Alder and A. Winther.
