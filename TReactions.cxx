@@ -3,6 +3,8 @@
 #include "TReactions.h"
 #include "Math/SpecFunc.h"
 
+//ClassImp(TReactions);
+
 // Set up some useful nuclear constants
 Double_t TReactions::hbarc = 197.326;
 Double_t TReactions::finestruc = 0.007297352;

@@ -1,7 +1,20 @@
 #ifndef TCLX_DataInput_h
 #define TCLX_DataInput_h
 
-#include "TCLX_inc.h"
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string.h>
+#include <stdio.h>
+#include <algorithm>
+#include <complex>
+#include <TMatrix.h>
+#include <TMatrixD.h>
+#include <TVector.h>
+#include <TVectorD.h>
+#include <TSystem.h>
 
 class TCLX_DataInput {
 
@@ -40,6 +53,8 @@ class TCLX_DataInput {
 		Int_t GetNStates() { return N_States; }
 		Int_t GetNLambda() { return MaxLambda; }
 			
+		//ClassDef(TCLX_DataInput,1);
+
 };
 
 #endif
@@ -103,7 +118,7 @@ void TCLX_DataInput::ReadFile(const char* filename, Option_t *opt){
 			continue;
 
 		if(verbose)
-			cout << line << endl;
+			std::cout << line << std::endl;
 
 		if(i==0) title = line;
 
@@ -114,7 +129,7 @@ void TCLX_DataInput::ReadFile(const char* filename, Option_t *opt){
 		if(i==5) linestream >> Theta_Start >> Theta_End >> Theta_Step;
 	
 		if(verbose && i==5)
-			cout << Theta_Start << " " << Theta_End << " " << Theta_Step << endl;
+			std::cout << Theta_Start << " " << Theta_End << " " << Theta_Step << std::endl;
 
 		if(i>5 && i <= 5+N_States)
 		{
@@ -171,7 +186,7 @@ void TCLX_DataInput::ReadFile(const char* filename, Option_t *opt){
 		printf("//=====================================//\n");
 		printf("\t\tEXPERIMENT TITLE:\n");
 		printf("//=====================================//\n\n");
-		cout << title << endl;
+		std::cout << title << std::endl;
 		printf("\n");
 
 		printf("//===========================================//\n");

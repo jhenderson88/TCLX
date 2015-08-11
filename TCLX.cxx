@@ -2,6 +2,8 @@
 
 #include "TCLX.h"
 
+//ClassImp(TCLX);
+
 //**************************************************//
 //	Functions herein are involved in the creation
 //	of relevant matrices and the integration of the
@@ -531,7 +533,7 @@ void TCLX::IntegrateTheta()
 		temp = Integration(i); // Perform the integration for the theta value given
 		Probabilities.push_back(temp); // Push the resulting TVectorD into a std::vector
 		stepfile << "\n";
-		if((int)i % 1 == 0) cout << setiosflags(ios::fixed) << std::setprecision(3) << 100 * (i-Theta_Min)/(Theta_Max-Theta_Min) << " % complete" << "\r" << flush; // Progress bar - important to keep distracted
+		if((int)i % 1 == 0) std::cout << std::setiosflags(std::ios::fixed) << std::setprecision(3) << 100 * (i-Theta_Min)/(Theta_Max-Theta_Min) << " % complete" << "\r" << std::flush; // Progress bar - important to keep distracted
 
 	}
 
@@ -1053,11 +1055,11 @@ std::vector< std::complex<Double_t> > TCLX::CollisionFunction(Int_t Lambda, Doub
 		output.resize(2);
 		Real = 0.5 * (a / pow(b,2) );
 		Imag = 0.0;		
-		output.at(0) = complex<Double_t>(Real,Imag);
+		output.at(0) = std::complex<Double_t>(Real,Imag);
 
 		Real = 0.0;
 		Imag = -(1.0 / (2.0 * TMath::Sqrt(2) ) ) * c / pow(b,2);
-		output.at(1.0) = complex<Double_t>(Real,Imag);
+		output.at(1.0) = std::complex<Double_t>(Real,Imag);
 		
 
 	}
@@ -1069,15 +1071,15 @@ std::vector< std::complex<Double_t> > TCLX::CollisionFunction(Int_t Lambda, Doub
 		output.resize(3);
 		Real = (3./4.) * (2.*pow(a,2) - pow(c,2))/pow(b,4) * PolFactor;
 		Imag = 0.;
-		output.at(0) = complex<Double_t>(Real,Imag);
+		output.at(0) = std::complex<Double_t>(Real,Imag);
 
 		Real = 0.;
 		Imag = -((3. * TMath::Sqrt(3))/(2. * TMath::Sqrt(2) )) * (a * c)/pow(b,4) * PolFactor;
-		output.at(1) = complex<Double_t>(Real,Imag);
+		output.at(1) = std::complex<Double_t>(Real,Imag);
 
 		Real = -((3. * TMath::Sqrt(3)) / (4. * TMath::Sqrt(2) )) * pow(c,2)/pow(b,4) * PolFactor;
 		Imag = 0.;		
-		output.at(2) = complex<Double_t>(Real,Imag);
+		output.at(2) = std::complex<Double_t>(Real,Imag);
 		
 
 	}
@@ -1089,19 +1091,19 @@ std::vector< std::complex<Double_t> > TCLX::CollisionFunction(Int_t Lambda, Doub
 		output.resize(4);
 		Real = (15./8.) * a*(2*pow(a,2) - 3*pow(c,2))/pow(b,6);
 		Imag = 0.;		
-		output.at(0) = complex<Double_t>(Real,Imag);
+		output.at(0) = std::complex<Double_t>(Real,Imag);
 
 		Real = 0.;
 		Imag = -((15. * TMath::Sqrt(3))/16.) * c * (4 * pow(a,2) - pow(c,2))/pow(b,6);
-		output.at(1) = complex<Double_t>(Real,Imag);
+		output.at(1) = std::complex<Double_t>(Real,Imag);
 
 		Real = -((15. * TMath::Sqrt(15)) / (8 * TMath::Sqrt(2) )) * a*pow(c,2)/pow(b,6);
 		Imag = 0.;		
-		output.at(2) = complex<Double_t>(Real,Imag);
+		output.at(2) = std::complex<Double_t>(Real,Imag);
 
 		Real = 0.;
 		Imag = ((15. * TMath::Sqrt(5))/16.) * pow(c,3) / pow(b,6);
-		output.at(3) = complex<Double_t>(Real,Imag);
+		output.at(3) = std::complex<Double_t>(Real,Imag);
 		
 
 	}	
@@ -1113,23 +1115,23 @@ std::vector< std::complex<Double_t> > TCLX::CollisionFunction(Int_t Lambda, Doub
 		output.resize(5);
 		Real = (35/32) * (8*pow(a,4) - 24*pow(a,2)*pow(c,2) + 3*pow(c,4)) / pow(b,8);
 		Imag = 0.;		
-		output.at(0) = complex<Double_t>(Real,Imag);
+		output.at(0) = std::complex<Double_t>(Real,Imag);
 
 		Real = 0.;
 		Imag = -((35 * TMath::Sqrt(5))/16) * a*c * (4 * pow(a,2) - 3*pow(c,2))/pow(b,8);
-		output.at(1) = complex<Double_t>(Real,Imag);
+		output.at(1) = std::complex<Double_t>(Real,Imag);
 
 		Real = -((35 * TMath::Sqrt(5)) / (16 * TMath::Sqrt(2) )) * pow(c,2) * (6*pow(a,2) - pow(c,2)) / pow(b,8);
 		Imag = 0.;		
-		output.at(2) = complex<Double_t>(Real,Imag);
+		output.at(2) = std::complex<Double_t>(Real,Imag);
 
 		Real = 0.;
 		Imag = ((35 * TMath::Sqrt(35))/16) * a * pow(c,3) / pow(b,8);
-		output.at(3) = complex<Double_t>(Real,Imag);
+		output.at(3) = std::complex<Double_t>(Real,Imag);
 
 		Real = (35 * TMath::Sqrt(35))/(32 * TMath::Sqrt(2)) * pow(c,4)/pow(b,8);
 		Imag = 0.;		
-		output.at(4) = complex<Double_t>(Real,Imag);
+		output.at(4) = std::complex<Double_t>(Real,Imag);
 		
 
 	}	

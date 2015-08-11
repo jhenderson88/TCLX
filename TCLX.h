@@ -1,9 +1,28 @@
 #ifndef TCLX_h
 #define TCLX_h
 
+#include <TSpline.h>
+#include <TMath.h>
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string.h>
+#include <stdio.h>
+#include <algorithm>
+#include <complex>
+#include <TH1.h>
+#include <TMatrix.h>
+#include <TMatrixD.h>
+#include <TVector.h>
+#include <TVectorD.h>
+#include <TSystem.h>
+#include <Math/SpecFunc.h>
+#include <TCanvas.h>
+
 #include "TCLX_DataInput.h" // The TCLX_DataInput class grabs the data from the input file, in order to be processed by the TCLX class.
 #include "TReactions.h" // The TReactions class includes a load of useful reactions (duh) information, such as Rutherford cross sections, as well as a load of information defining the nuclear properties
-#include "TCLX_inc.h" // Here we include all of the relevant ROOT and C(++) libraries
 
 
 //**********************************************//
@@ -16,7 +35,7 @@
 //
 //**********************************************//
 
-class TCLX{
+class TCLX {
 
 	private :
 
@@ -33,7 +52,7 @@ class TCLX{
 
 		void WriteMatrix(std::ofstream& outfile, TMatrixD Matrix); // A function which prints a matrix in ASCII format to a predefined outfile
 	
-		vector<TMatrixD> TransitionMatrix; // Vector of Transition TMatrices, for lambda = 1 -> max lambda
+		std::vector<TMatrixD> TransitionMatrix; // Vector of Transition TMatrices, for lambda = 1 -> max lambda
 		Int_t N_States; // Number of states
 		Int_t MaxLambda; // Maximum lambda value
 
@@ -61,8 +80,8 @@ class TCLX{
 		void ConstructLDNUMMatrix(); // Fill the above matrix
 		Int_t MaxStateConnections; // Maximum number of matrix elements connected to a single state
 
-		vector<TMatrixD> MatrixElementPairs; // Matrices showing which other states a given state is "connected" to
-		vector<TMatrixD> MatrixElementsByConnections; // Matrices containing the matrix elements corresponding to the "connections" in MatrixElementPairs
+		std::vector<TMatrixD> MatrixElementPairs; // Matrices showing which other states a given state is "connected" to
+		std::vector<TMatrixD> MatrixElementsByConnections; // Matrices containing the matrix elements corresponding to the "connections" in MatrixElementPairs
 		void ConstructMatrixElementPairsMatrices(); // Construct MatrixElementPairs and MatrixElementsByConnections
 
 		TVectorD Eta; // Vector containing Eta (similar to GOSIA manual, Eq. 3.19) values for each state (combined to give difference)
@@ -80,15 +99,15 @@ class TCLX{
 		void MakeXiMatrix(); // Make the above matrix
 		Double_t XiMax; // The maximum value of the Xi matrix
 
-		vector<TMatrixD> PsiMatrix; // Psi matrix (GOSIA manual, Eq. 3.21)
+		std::vector<TMatrixD> PsiMatrix; // Psi matrix (GOSIA manual, Eq. 3.21)
 		void MakePsiMatrix(); // Make Psi matrix
 		Double_t PsiMax; // Maximum value of Psi
 
 		// These vectors contain the magnetic substate information
-		vector<Double_t> MagneticSubstatesCatalogue; // Contains all of the magnetic substates
-		vector<Int_t> MagneticSubstatesStart; // Gives the FIRST substate catalogue value for any given STATE
-		vector<Int_t> MagneticSubstatesStop; // Gives the LAST substate catalogue value for any given state
-		vector<Int_t> MagneticSubstatesHalt; // Used to speed things up with symmetry arguments
+		std::vector<Double_t> MagneticSubstatesCatalogue; // Contains all of the magnetic substates
+		std::vector<Int_t> MagneticSubstatesStart; // Gives the FIRST substate catalogue value for any given STATE
+		std::vector<Int_t> MagneticSubstatesStop; // Gives the LAST substate catalogue value for any given state
+		std::vector<Int_t> MagneticSubstatesHalt; // Used to speed things up with symmetry arguments
 		void MakeMagneticSubstates(); // Fill the above vectors
 
 		TMatrixD MRange; // Matrix defining allowed combinations of substates for the given transition multipolarity
@@ -108,7 +127,7 @@ class TCLX{
 		Double_t NormalisationFactor; // Factor for normalisation
 		Double_t IntegerSpin; // Are we using integer spin?
 
-		vector<TVectorD> Probabilities; // These are the excitation probabilities
+		std::vector<TVectorD> Probabilities; // These are the excitation probabilities
 
 		std::vector<TMatrixD> FinalRealAmplitude; // Final real and imaginary amplitudes at the end of the integration process
 		std::vector<TMatrixD> FinalImagAmplitude;
@@ -182,6 +201,8 @@ class TCLX{
 			reaction->SetElab(LabE);
 		}
 		void SetupVariables(); // This needs to be run after setting up the information and before performing the integration
+
+		//ClassDef(TCLX,1);
 
 };
 
@@ -433,7 +454,7 @@ void TCLX::PrintCalculationDetails()
 	for(int i=0;i<Zeta.GetNrows();i++)
 		outfile << Zeta[i] << "\n";
 
-	outfile << "\n\nMagnetic substates catalogue:\n" << endl;
+	outfile << "\n\nMagnetic substates catalogue:\n" << std::endl;
 	for(int i=0;i<N_States;i++)
 	{
 		outfile << "State " << i << ", J=" << level_J.at(i) << ":\t";
@@ -714,8 +735,8 @@ void TCLX::SetupCLXReaction()
 {
 
 	Int_t n;
-	cout << "Number of states: " << endl;
-	cin >> n;
+	std::cout << "Number of states: " << std::endl;
+	std::cin >> n;
 
 	SetNStates(n);
 
@@ -743,12 +764,12 @@ void TCLX::SetStateVariables()
 
 	for(int i=0;i<N_States;i++)
 	{
-		cout << "Input state " << (i+1) << " energy (MeV):\n";
-		cin >> temp_E;
-		cout << "Input state " << (i+1) << " J:\n";
-		cin >> temp_J;
-		cout << "Input state " << (i+1) << " parity (1 = +, 0 = -)\n";
-		cin >> temp_P;
+		std::cout << "Input state " << (i+1) << " energy (MeV):\n";
+		std::cin >> temp_E;
+		std::cout << "Input state " << (i+1) << " J:\n";
+		std::cin >> temp_J;
+		std::cout << "Input state " << (i+1) << " parity (1 = +, 0 = -)\n";
+		std::cin >> temp_P;
 
 		level_E.push_back(temp_E);
 		level_J.push_back(temp_J);
@@ -765,8 +786,8 @@ void TCLX::SetMatrixElements()
 	Double_t temp_ME;
 	
 	TransitionMatrix.clear();
-	cout << "Maximum multipolarity needed:" << endl;
-	cin >> MaxLambda;
+	std::cout << "Maximum multipolarity needed:" << std::endl;
+	std::cin >> MaxLambda;
 
 	TransitionMatrix.resize(MaxLambda);
 
@@ -777,8 +798,8 @@ void TCLX::SetMatrixElements()
 		{
 			for(int k=j;k<N_States;k++)
 			{
-				cout << "Matrix element between state: " << j+1 << " and state " << k+1 << " for multipolarity " << (i+1) << endl;
-				cin >> temp_ME;
+				std::cout << "Matrix element between state: " << j+1 << " and state " << k+1 << " for multipolarity " << (i+1) << std::endl;
+				std::cin >> temp_ME;
 				TransitionMatrix.at(i)[j][k] = temp_ME;
 				TransitionMatrix.at(i)[k][j] = temp_ME;
 			}
@@ -794,21 +815,21 @@ void TCLX::SetReactionInformation()
 		reaction = new TReactions();
 
 	Double_t Ebeam;
-	cout << "Beam energy: " << endl;
-	cin >> Ebeam;
+	std::cout << "Beam energy: " << std::endl;
+	std::cin >> Ebeam;
 	
 	reaction->SetElab(Ebeam);
 
 	Int_t TA,TZ,PA,PZ;
 
-	cout << "Target A:" << endl;
-	cin >> TA;
-	cout << "Target Z:" << endl;
-	cin >> TZ;
-	cout << "Projectile A" << endl;
-	cin >> PA;
-	cout << "Projectile Z" << endl;
-	cin >> PZ;
+	std::cout << "Target A:" << std::endl;
+	std::cin >> TA;
+	std::cout << "Target Z:" << std::endl;
+	std::cin >> TZ;
+	std::cout << "Projectile A" << std::endl;
+	std::cin >> PA;
+	std::cout << "Projectile Z" << std::endl;
+	std::cin >> PZ;
 
 	reaction->SetNuclei(PZ,PA,TZ,TA);
 
@@ -818,14 +839,14 @@ void TCLX::SetThetaRange()
 {
 
 	Double_t mintheta,maxtheta,steptheta;
-	cout << "Theta minimum: " << endl;
-	cin >> mintheta;
+	std::cout << "Theta minimum: " << std::endl;
+	std::cin >> mintheta;
 
-	cout << "Theta maximum: " << endl;
-	cin >> maxtheta;
+	std::cout << "Theta maximum: " << std::endl;
+	std::cin >> maxtheta;
 
-	cout << "Theta in steps of: " << endl;
-	cin >> steptheta;
+	std::cout << "Theta in steps of: " << std::endl;
+	std::cin >> steptheta;
 
 	Theta_Min = mintheta;
 	Theta_Max = maxtheta;
