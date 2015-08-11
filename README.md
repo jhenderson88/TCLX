@@ -6,6 +6,14 @@ TCLX is a C++ Coulomb excitation code based on the Fortran CLX code (written by 
 
 TCLX requires that the MathMore ROOT libraries are compiled on your machine. These include a number of GSL functions, which simplifies things considerably. Instructions on compilation of ROOT with the MathMore libraries can be found online, [here](https://root.cern.ch/drupal/content/installing-root-source).
 
+Additionally, in order to use the MathMore libraries, they must be loaded on startup:
+
+> gSystem->Load("libMathMore.so");
+
+> gSystem->Load("libMathCore.so");
+
+Alternatively, you can just include the two lines above in your rootlogon.C file.
+
 In order to compile the TCLX libraries, use the makefile. This has been shamelessly modified from the [GRSISort](https://github.com/GRIFFINCollaboration/GRSISort) makefile, and hence looks very similar.
 
 Once the libTCLX.so library has been compiled, one can simply load it in ROOT:
@@ -88,7 +96,7 @@ The code will then take a few seconds to calculate the excitation probabilities 
 
 In order to convert them into cross sections and print them, one can do:
 
-> myclx->PrintCrossSections("outputfilename.txt");
+> myclx->PrintCrossSections("outputfilename.txt")
 
 Which will print them to file. Alternatively, if a graphical representation is all you're after:
 
