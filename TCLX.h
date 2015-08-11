@@ -58,12 +58,14 @@ class TCLX {
 
 		Double_t Theta_Min, Theta_Max, Theta_Step; // These are the angles we are going to integrate between, and the steps we are going to increment in
 		
-		void GrabData(const char* s, Option_t *opt=""); // Grab data from file via TCLX_DataInput class
+		void GrabData(const char* s, Option_t *opt="", Option_t *opt_bt="b"); // Grab data from file via TCLX_DataInput class
 
 		void GetMatrices(TCLX_DataInput *input); // Load the vector of TransitionMatrices from input
-		void GetNuclei(TCLX_DataInput *input, Option_t *opt="");   // Load the nuclei into TReactions from input
+		void GetNuclei(TCLX_DataInput *input, Option_t *opt="", Option_t *opt_bt="b");   // Load the nuclei into TReactions from input
 		void GetKinematics(TCLX_DataInput *input); // Load the kinematics into TReactions from input
 		void GetOtherVariables(TCLX_DataInput *input); // Load other useful variables
+
+		bool BeamExcitation; // Are we dealing with BeamExcitation?
 
 		TReactions *reaction; // Reaction information, including nuclei and kinematics
 
@@ -217,7 +219,7 @@ class TCLX {
 //	mode.
 //******************************//
 
-void TCLX::GrabData(const char* filename, Option_t *opt)
+void TCLX::GrabData(const char* filename, Option_t *opt, Option_t *opt_bt)
 {
 
 	// Check options and change flags accordingly
@@ -244,7 +246,7 @@ void TCLX::GrabData(const char* filename, Option_t *opt)
 	reaction = new TReactions();
 
 	// Grab the nuclei, the kinematics and other variables from the TCLX_DataInput
-	GetNuclei(inputdata,opt);
+	GetNuclei(inputdata,opt,opt_bt);
 	GetKinematics(inputdata);
 	GetOtherVariables(inputdata);
 
@@ -319,21 +321,42 @@ void TCLX::GetMatrices(TCLX_DataInput *input)
 //	TReactions for use later.
 //******************************//
 
-void TCLX::GetNuclei(TCLX_DataInput *input, Option_t *opt)
+void TCLX::GetNuclei(TCLX_DataInput *input, Option_t *opt, Option_t *opt_bt)
 {
 
 	verbose = false;
 	if(strncmp(opt,"v",1)==0)
 		verbose = true;
+
+	if(strncmp(opt_bt,"b",1)==0)
+		BeamExcitation = true;
+	else if(strncmp(opt_bt,"t",1)==0)
+		BeamExcitation = false;
+	else
+		printf("Not valid beam/target excitation option\n");	
 	
 	if(!reaction)
 		reaction = new TReactions();
 
-	Int_t temp_ZP = input->ZP;
-	Int_t temp_AP = input->AP;
-	Int_t temp_ZT = input->ZT;
-	Int_t temp_AT = input->AT;
+	Int_t temp_ZP;
+	Int_t temp_AP;
+	Int_t temp_ZT;
+	Int_t temp_AT;
 
+	if(BeamExcitation)
+	{
+		temp_ZP = input->ZP;
+		temp_AP = input->AP;
+		temp_ZT = input->ZT;
+		temp_AT = input->AT;
+	}
+	else if(!BeamExcitation)
+	{
+		temp_ZT = input->ZP;
+		temp_AP = input->AP;
+		temp_ZP = input->ZT;
+		temp_AT = input->AT;
+	}
 	reaction->SetNuclei(temp_ZP,temp_AP,temp_ZT,temp_AT);	
 
 	if(verbose)
