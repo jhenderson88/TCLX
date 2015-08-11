@@ -49,8 +49,9 @@ State index 1, State index 2, matrix element (NOT B(E2)), multipolarity
 
 This is all of the information the code needs, and can be passed simply as:
 
-> TCLX *myclx = new TCLX()
-> myclx->GrabData("filename.txt","v")
+> TCLX *myclx = new TCLX();
+
+> myclx->GrabData("filename.txt","v");
 
 Where "v" is the verbose option.
 
@@ -58,6 +59,7 @@ Where "v" is the verbose option.
 
 This is not recommended for large calculations (the probability of a mistake tends to 1), but can be done, as follows:
 > TCLX *myclx = new TCLX();
+
 > myclx->SetupCLXReaction();
 
 You will then be prompted to manually enter the various variables.
@@ -86,11 +88,11 @@ The code will then take a few seconds to calculate the excitation probabilities 
 
 In order to convert them into cross sections and print them, one can do:
 
-> myclx->PrintCrossSections("outputfilename.txt")
+> myclx->PrintCrossSections("outputfilename.txt");
 
 Which will print them to file. Alternatively, if a graphical representation is all you're after:
 
-> myclx->StateCrossSections(1)->Draw()
+> myclx->StateCrossSections(1)->Draw();
 
 Will draw a TSpline3 of your cross section. Again note that the indices here are different from those in the input file.
 
