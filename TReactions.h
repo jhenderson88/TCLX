@@ -1,7 +1,25 @@
 #ifndef TReactions_h
 #define TReactions_h
 
-#include "TCLX_inc.h"
+#include <TSpline.h>
+#include <TMath.h>
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string.h>
+#include <stdio.h>
+#include <algorithm>
+#include <complex>
+#include <TH1.h>
+#include <TMatrix.h>
+#include <TMatrixD.h>
+#include <TVector.h>
+#include <TVectorD.h>
+#include <TSystem.h>
+#include <Math/SpecFunc.h>
+#include <TCanvas.h>
 
 //************************************//
 //	TReactions class includes a load
@@ -96,6 +114,8 @@ class TReactions {
 		Double_t EtaCalc(Double_t v); // Calculates Eta, using relative velocities
 	
 		TSpline3* PlotSafeCoulEx(Double_t Sep, Double_t Theta_Min, Double_t Theta_Max, Double_t StepSize); // Plots the safe Coulex angles for a given distance of separation in fm (i.e. 5 fm is the "traditional" safe Coulex limit)
+
+		//ClassDef(TReactions,1);
 
 };
 

@@ -4,7 +4,7 @@
 
 //ClassImp(TCLX);
 
-//**************************************************//
+//*****************************************************//
 //	Functions herein are involved in the creation
 //	of relevant matrices and the integration of the
 //	amplitude derivatives, as defined in the GOSIA
@@ -13,14 +13,14 @@
 //	generally more related to functionalities, such
 //	as grabbing the inputs, printing the data, and
 //	evaluating the resultant cross sections
-//**************************************************//
+//*****************************************************//
 
 //******************************************************** SET UP MATRICES BEFORE BEGINNING INTEGRATION **********************************************************//
 
-//*******************************//
+//**********************************//
 //	Master function prepares all
 //	matrices for integration
-//*******************************//
+//**********************************//
 
 
 void TCLX::PrepareMatrices()
@@ -40,11 +40,11 @@ void TCLX::PrepareMatrices()
 
 }
 
-//******************************//
-// Check matrix symmetry
-// Identify non-zero matrices
-// vs lambda
-//******************************//
+//*********************************//
+// 	Check matrix symmetry
+// 	Identify non-zero matrices
+// 	vs lambda
+//*********************************//
 
 //Double_t TCLX::Accuracy = 1e-8;
 
@@ -72,14 +72,14 @@ void TCLX::CheckMatrix()
 
 }
 
-//*******************************//
+//**********************************//
 //	Construct a matrix 
 //  (Lambda_Level) which 
 //  contains information on the
 //  number of transitions 
 //  associated with each state
 //	for each value of lambda
-//*******************************//
+//**********************************//
 
 void TCLX::ConstructLDNUMMatrix()
 {
@@ -110,7 +110,7 @@ void TCLX::ConstructLDNUMMatrix()
 
 }
 
-//*******************************//
+//**********************************//
 // 	Based on the Lambda_Level 
 // 	matrix, we now construct a
 //  matrix (MatrixElementPairs)
@@ -119,7 +119,7 @@ void TCLX::ConstructLDNUMMatrix()
 //  (MatrixElementsByConnections) 
 // 	which gives us the 
 //	corresponding matrix elements
-//*******************************//
+//**********************************//
 
 
 void TCLX::ConstructMatrixElementPairsMatrices()
@@ -160,7 +160,7 @@ void TCLX::ConstructMatrixElementPairsMatrices()
 
 }
 
-//*****************************//
+//*********************************************************************************************************************//
 // 	Create a matrix containing
 //  the Eta values, where the Eta value between two states is 
 // 	defined as:
@@ -168,7 +168,7 @@ void TCLX::ConstructMatrixElementPairsMatrices()
 //	here: s = (1 + (A1/A2))
 //  the indices 1 & 2 depend on where we're doing target or projectile excitation
 //  in this matrix we simply calculate the value for a single state, we'll subtract them from one another later
-//*****************************//
+//*********************************************************************************************************************//
 
 void TCLX::SetEta()
 {
@@ -184,12 +184,12 @@ void TCLX::SetEta()
 	}
 }
 
-//*********************************//
+//******************************************//
 // 	Use the Eta matrix to calculate
 // 	the differences as defined above
 //	for every matrix element 
 //  combination
-//*********************************//
+//******************************************//
 
 void TCLX::MakeXiMatrix()
 {
@@ -217,12 +217,12 @@ void TCLX::MakeXiMatrix()
 
 }
 
-//**************************************//
+//******************************************//
 //  Create the Psi matrix, which is used
 //  to help determine coupling strengths
 //  similar to Xi matrix, depends on 
 // 	differences between Ebeam and Elevel
-//**************************************//
+//******************************************//
 
 
 void TCLX::MakePsiMatrix()
@@ -283,14 +283,14 @@ void TCLX::MakePsiMatrix()
 
 }
 
-//******************************************//
+//**************************************************//
 //	Now we want to work out how many 
 // 	magnetic substates exist for each state.
 //	We'll do this by making four matrices
 //  one defining the magnetic substates and 
 //  three others telling us which ones
 // 	correspond to which states
-//******************************************//
+//**************************************************//
 
 void TCLX::MakeMagneticSubstates()
 {
@@ -343,11 +343,11 @@ void TCLX::MakeMagneticSubstates()
 
 }
 
-//***********************************************//
+//****************************************************//
 //	Not all transitions between substates
 //  are allowed by angular momentum conservation
 //  this matrix is used to define which ones are
-//***********************************************//
+//****************************************************//
 
 void TCLX::MakeMRange()
 {
@@ -431,13 +431,13 @@ void TCLX::MakeMRange()
 
 }
 
-//******************************************//
+//***********************************************//
 //	Now we've constructed our MRange matrix
 //	we can use it to put together our zeta 
 // 	matrix. This matrix defines the coupling
 // 	between the intial and final (sub)states
 // 	see Eq 3.21 in the GOSIA manual
-//******************************************//
+//***********************************************//
 
 void TCLX::MakeZeta()
 {
@@ -510,13 +510,13 @@ void TCLX::MakeZeta()
 
 //******************************************************** INTEGRATION SECTION BEGINS **********************************************************//
 
-//**********************************************//
+//*****************************************************//
 //	Right, now we've set up all of the matrices
 //	we need to perform the integration, let's 
 //  start integrating. We need to perform this 
 // 	integration for every value of theta we want
 //	to consider
-//**********************************************//
+//*****************************************************//
 
 void TCLX::IntegrateTheta()
 {
@@ -542,7 +542,7 @@ void TCLX::IntegrateTheta()
 	printf("Integration complete!!!\n"); // SUCCESS!
 }
 
-//**********************************************//
+//****************************************************//
 //	This is where we're going to actually do the
 //	integration.
 //
@@ -563,7 +563,7 @@ void TCLX::IntegrateTheta()
 //	Once we've completed our integration, we can
 // 	calculate probabilities and send them back
 //	to the IntegrateTheta() function.
-//**********************************************//
+//****************************************************//
 
 
 TVectorD TCLX::Integration(Double_t theta)
@@ -945,12 +945,12 @@ TVectorD TCLX::Integration(Double_t theta)
 
 }
 
-//**************************************************//
+//******************************************************//
 //	This function evaluates the Amplitude Derivatives
 // 	at a given point in the integration process.
 // 	The amplitude derivative function is defined in
 //	the GOSIA manual, Eq. 3.18
-//**************************************************//
+//******************************************************//
 
 std::vector<TMatrixD> TCLX::ComputeAmpDerivativeMatrices(std::vector<TMatrixD> AmplitudeIn, Double_t Epsilon, Double_t Omega)
 {
@@ -1021,14 +1021,14 @@ std::vector<TMatrixD> TCLX::ComputeAmpDerivativeMatrices(std::vector<TMatrixD> A
 
 }
 
-//***************************************************//
+//********************************************************//
 // 	Calculates collision functions, dependent upon
 //	lambda, epsilon and omega for the possible values
 //	of mu. This is returned as a vector of complex
 //	numbers. Even mu values correspond to real 
 //	collision functions, odd mu values correspond
 //	to imaginary collision functions.
-//***************************************************//
+//********************************************************//
 
 std::vector< std::complex<Double_t> > TCLX::CollisionFunction(Int_t Lambda, Double_t Epsilon, Double_t Omega)
 {
@@ -1143,11 +1143,11 @@ std::vector< std::complex<Double_t> > TCLX::CollisionFunction(Int_t Lambda, Doub
 	return output;
 
 }
-//*************************************************//
+//*******************************************************//
 //	Calculate Electric Dipole Normalization value 
 // 	this accounts for E1 strength. See GOSIA manual
 // 	Eqs. 3.25 and 3.26 for description.
-//*************************************************//
+//*******************************************************//
 
 Double_t TCLX::ElectricDipoleNormalization()
 {
