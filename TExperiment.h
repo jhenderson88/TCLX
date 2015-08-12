@@ -59,16 +59,16 @@ class TExperiment {
 		//	These are the same plots which are
 		//	produced in the TCLX code
 		//*************************************//
-		TSpline3* PlotDiffCrossSection(Int_t State);
-		TSpline3* PlotDiffCrossSectionLab(Int_t State);
+		TGraph* PlotDiffCrossSection(Int_t State);
+		TGraph* PlotDiffCrossSectionLab(Int_t State);
 
 
 		//*************************************//
 		//	Turn those differential cross-
 		//	sections into cross-sections.
 		//*************************************//
-		TSpline3* PlotCrossSection(Int_t State);
-		TSpline3* PlotCrossSectionLab(Int_t State);
+		TGraph* PlotCrossSection(Int_t State);
+		TGraph* PlotCrossSectionLab(Int_t State);
 
 		//*************************************//
 		//	Plot yields over the course of 
@@ -77,207 +77,141 @@ class TExperiment {
 		//	and take no account of gammma-
 		//	ray detection efficiency.
 		//*************************************//
-		TSpline3* PlotYieldLab(Int_t State); 
+		TGraph* PlotYieldLab(Int_t State); 
+
+		//*************************************//
+		//	Plot the particle yield, assuming 
+		//	gamma-ray detection requirement.
+		//	i.e. take into account gamma-
+		//	ray detection efficiency.
+		//*************************************//
+		TGraph* PlotYieldLabGamma(Int_t State, Int_t N_Detectors=12);
+
+		//********************************************************************//
+		// 	Graph of the TIGRESS efficiency based on the GEANT simulations 
+		//	in the paper: C. E. Svensson et al., TIGRESS: TRIUMF-ISAC 
+		//	gamma-ray escape-suppressed spectrometer,
+		//	J. Phys. G: Nucl. Part. Phys. 31 (2005) S1663
+		//
+		//	These simulations were for a 12 detector configuration in
+		//	an unsuppressed mode. Can be normalised to a different number
+		//	of detectors (and eventually the suppressed mode).
+		//********************************************************************//
+		TGraph* TigressEfficiency(Int_t N_Detectors=12);
+
+
+		//********************************************************************//
+		//	Here we are going to define the detector coverage. At some
+		//	point I would like to autmatically include SHARC, BAMBINO 
+		//	and TIP detector geometries in here so they can be included
+		//	easily, with the only variable being the distance from the
+		//	target.
+		//********************************************************************//
+
+
+		std::vector<Double_t> det_cov_theta_min;
+		std::vector<Double_t> det_cov_theta_max;
+		void DefineDetectorCoverageTheta(Double_t theta_min, Double_t theta_max)
+		{
+			det_cov_theta_min.push_back(theta_min);
+			det_cov_theta_max.push_back(theta_max);
+		}
+
+		void RemoveParticleDetectors() 
+		{
+			det_cov_theta_min.clear(); 
+			det_cov_theta_max.clear(); 
+		}
+		
+		//********************************************//
+		//	This function will print the yields,
+		//	separated by the included particle
+		//	detectors.
+		//********************************************//
+		void PrintYieldsByDetector(Int_t N_Detectors=12);
 
 };
 #endif
 
 #ifdef TExperiment_cxx
 
-TSpline3* TExperiment::PlotDiffCrossSection(Int_t State)
+TGraph* TExperiment::TigressEfficiency(Int_t N_Detectors)
 {
+	Double_t Tig_Eff[12] = {0, 36.57, 40.21, 40.32, 35.97, 27.72, 23.35, 18.42, 12.64, 8.00, 5.83, 3.66};
+	Double_t Tig_E[12] = {0, 40.92, 61.74, 103.72, 204.86, 411.31, 612.66, 1017.62, 2026.93, 4076.33, 6077.89, 10200.48};
+	for(int i=0;i<12;i++)
+		Tig_Eff[i] = Tig_Eff[i] * N_Detectors/12;
+	for(int i=0;i<12;i++)
+		Tig_E[i] = Tig_E[i] / 1000;
+	TGraph *TigEff = new TGraph(11,Tig_E,Tig_Eff);
 
-	if(State >= clx->N_States || State < 0){
-		printf("Error, state doesn't exist\n");
-	}
-
-	TVectorD Prob;	
-	Prob.ResizeTo(clx->N_States);
-
-	Double_t CS[clx->Probabilities.size()];
-	Double_t Theta[clx->Probabilities.size()];
-
-	Double_t step = (clx->Theta_Max - clx->Theta_Min)/clx->Probabilities.size();
-
-
-	for(unsigned int i=0;i<clx->Probabilities.size();i++)
-	{
-		Prob = clx->Probabilities.at(i);		
-
-		Double_t ruth = reaction->EvalRutherfordLevel((clx->Theta_Min+i*step),clx->level_E.at(State));
-		CS[i] = Prob[State] * ruth;
-		Theta[i] = clx->Theta_Min + i*step;
-	}
-
-	char sname[64];
-	sprintf(sname,"DiffCrossSection_CoM_%i",State);
-	TSpline3 *CSSpline = new TSpline3(sname,Theta,CS,clx->Probabilities.size());
-
-	return CSSpline;
-	
+	return TigEff;
 }
 
-TSpline3* TExperiment::PlotDiffCrossSectionLab(Int_t State)
+void TExperiment::PrintYieldsByDetector(Int_t N_Detectors)
 {
 
-	if(State >= clx->N_States || State < 0){
-		printf("Error, state doesn't exist\n");
-	}
-
-	TVectorD Prob;	
+	TVectorD Prob;
 	Prob.ResizeTo(clx->N_States);
 
-	Double_t CS[clx->Probabilities.size()];
-	Double_t Theta[clx->Probabilities.size()];
+	std::ofstream outfile;
+	outfile.open("TCLX_Detection_Yields.txt");
 
 	Double_t step = (clx->Theta_Max - clx->Theta_Min)/clx->Probabilities.size();
-
 	Double_t Tau = reaction->Proj_A / reaction->Tar_A;
+	Double_t TargetNucleons = 0.0006022 * TargetDensity / reaction->Tar_A; // Target nucleon density (Avg. const * size of a barn * target density / target mass)
 
-	for(unsigned int i=0;i<clx->Probabilities.size();i++)
+	for(int i=0;i<det_cov_theta_min.size();i++)
 	{
-		Prob = clx->Probabilities.at(i);		
+		Double_t MinTheta = det_cov_theta_min.at(i);
+		Double_t MaxTheta = det_cov_theta_max.at(i);
 
-		Double_t ruth = reaction->EvalRutherfordLevel((clx->Theta_Min+i*step),clx->level_E.at(State));
-		CS[i] = Prob[State] * ruth;
-		Double_t thetacm = clx->Theta_Min + i*step;
-		Double_t thetalab = TMath::RadToDeg() * TMath::ATan( (TMath::Sin(TMath::DegToRad() * thetacm) / ( ( TMath::Cos(TMath::DegToRad() * thetacm) + Tau ) )));//thetacm
-		if(thetalab > 0)
-			Theta[i] = thetalab;
-		else
-			Theta[i] = thetalab + 180;
-	}
-
-	char sname[64];
-	sprintf(sname,"DiffCrossSection_Lab_State_%i",State);
-	TSpline3 *CSSpline = new TSpline3(sname,Theta,CS,clx->Probabilities.size());
-
-	return CSSpline;
-	
-}
-
-TSpline3* TExperiment::PlotCrossSection(Int_t State)
-{
-
-	if(State >= clx->N_States || State < 0){
-		printf("Error, state doesn't exist\n");
-	}
-
-	TVectorD Prob;	
-	Prob.ResizeTo(clx->N_States);
-
-	Double_t CS[clx->Probabilities.size()];
-	Double_t Theta[clx->Probabilities.size()];
-
-	Double_t step = (clx->Theta_Max - clx->Theta_Min)/clx->Probabilities.size();
+		outfile << "Detector " << (i+1) << " coverage theta between " << MinTheta << " and " << MaxTheta << "\n\n";
 
 
-	for(unsigned int i=0;i<clx->Probabilities.size();i++)
-	{
-		Prob = clx->Probabilities.at(i);		
-
-		Double_t ruth = reaction->EvalRutherfordLevel((clx->Theta_Min+i*step),clx->level_E.at(State));
-		Double_t tempCS = Prob[State] * ruth;
-		CS[i] = tempCS * 2 * TMath::Pi() * TMath::Sin(TMath::DegToRad() * (clx->Theta_Min + i*step)) * (TMath::DegToRad());
-		Theta[i] = clx->Theta_Min + i*step;
-
-	}
-
-	char sname[64];
-	sprintf(sname,"DiffCrossSection_CoM_%i",State);
-	TSpline3 *CSSpline = new TSpline3(sname,Theta,CS,clx->Probabilities.size());
-
-	return CSSpline;
-	
-}
-
-TSpline3* TExperiment::PlotCrossSectionLab(Int_t State)
-{
-
-	if(State >= clx->N_States || State < 0){
-		printf("Error, state doesn't exist\n");
-	}
-
-	TVectorD Prob;	
-	Prob.ResizeTo(clx->N_States);
-
-	Double_t CS[clx->Probabilities.size()];
-	Double_t Theta[clx->Probabilities.size()];
-
-	Double_t step = (clx->Theta_Max - clx->Theta_Min)/clx->Probabilities.size();
-
-	Double_t Tau = reaction->Proj_A / reaction->Tar_A;
-
-	for(unsigned int i=0;i<clx->Probabilities.size();i++)
-	{
-		Prob = clx->Probabilities.at(i);		
-
-		Double_t ruth = reaction->EvalRutherfordLevel((clx->Theta_Min+i*step),clx->level_E.at(State));
-		Double_t thetacm = clx->Theta_Min + i*step;
-		Double_t thetalab = TMath::RadToDeg() * TMath::ATan( (TMath::Sin(TMath::DegToRad() * thetacm) / ( ( TMath::Cos(TMath::DegToRad() * thetacm) + Tau ) )));//thetacm
-		if(thetalab > 0)
-			Theta[i] = thetalab;
-		else
-			Theta[i] = thetalab + 180;
-		Double_t tempCS = Prob[State] * ruth;
-		CS[i] = tempCS * 2 * TMath::Pi() * TMath::Sin(TMath::DegToRad() * Theta[i]) * (TMath::DegToRad());
-
-	}
-
-	char sname[64];
-	sprintf(sname,"DiffCrossSection_Lab_State_%i",State);
-	TSpline3 *CSSpline = new TSpline3(sname,Theta,CS,clx->Probabilities.size());
-
-	return CSSpline;
-	
-}
-
-TSpline3* TExperiment::PlotYieldLab(Int_t State)
-{
-
-	TVectorD Prob;	
-	Prob.ResizeTo(clx->N_States);
-
-	Double_t CS[clx->Probabilities.size()];
-	Double_t Theta[clx->Probabilities.size()];
-	Double_t Yield[clx->Probabilities.size()];
-
-	if(!TargetDensity || !BeamIntensity || !ExperimentLength)
-	{
-		printf("Experiment details not set!\n");
-	}
-	else
-	{
-
-		Double_t TargetNucleons = 0.0006022 * TargetDensity / reaction->Tar_A; // Target nucleon density (Avg. const * size of a barn * target density / target mass)
-
-		Double_t step = (clx->Theta_Max - clx->Theta_Min)/clx->Probabilities.size();
-
-		Double_t Tau = reaction->Proj_A / reaction->Tar_A;
-
-		for(unsigned int i=0;i<clx->Probabilities.size();i++)
+		for(int k=0;k<clx->N_States;k++)
 		{
-			Prob = clx->Probabilities.at(i);		
 
-			Double_t ruth = reaction->EvalRutherfordLevel((clx->Theta_Min+i*step),clx->level_E.at(State));
-			Double_t thetacm = clx->Theta_Min + i*step;
-			Double_t thetalab = TMath::RadToDeg() * TMath::ATan( (TMath::Sin(TMath::DegToRad() * thetacm) / ( ( TMath::Cos(TMath::DegToRad() * thetacm) + Tau ) )));//thetacm
-			if(thetalab > 0)
-				Theta[i] = thetalab;
-			else
-				Theta[i] = thetalab + 180;
+			outfile << "State " << (k+1) << " J: " << std::setw(3) << clx->level_J.at(k) << " | State E: " << std::setw(8) << clx->level_E.at(k) << " MeV |";
 
-			Double_t tempCS = Prob[State] * ruth;
-			CS[i] = tempCS * 2 * TMath::Pi() * TMath::Sin(TMath::DegToRad() * Theta[i]) * (TMath::DegToRad());
-			Double_t tempyield = CS[i] * TargetNucleons * BeamIntensity * ExperimentLength * 60 * 60 * 24;
-			Yield[i] = tempyield;
+			Double_t tempCS = 0;
+			Double_t CS = 0;
+			Double_t Yield = 0;
+			Double_t GammaEff =	TigressEfficiency(N_Detectors)->Eval(clx->level_E.at(k)) / 100;
+
+			for(int j=0;j<clx->Probabilities.size();j++)
+			{
+				Prob = clx->Probabilities.at(j);		
+				Double_t ruth = reaction->EvalRutherfordLevel((clx->Theta_Min+j*step),clx->level_E.at(k));
+				Double_t thetacm = clx->Theta_Min + j*step;
+				Double_t thetalab = TMath::RadToDeg() * TMath::ATan( (TMath::Sin(TMath::DegToRad() * thetacm) / ( ( TMath::Cos(TMath::DegToRad() * thetacm) + Tau ) )));//thetacm
+
+				if(thetalab > 0)
+					thetalab = thetalab;
+				else
+					thetalab = thetalab + 180;
+
+				if(thetalab > MinTheta && thetalab < MaxTheta){
+					tempCS = Prob[k] * ruth * 2 * TMath::Pi() * TMath::Sin(TMath::DegToRad() * thetalab) * (TMath::DegToRad());
+					CS = CS + tempCS;
+				}
+			}
+
+			Yield = CS * TargetNucleons * BeamIntensity * ExperimentLength * 60 * 60 * 24;
+	
+			outfile << " Particles detected: " << std::setw(12) << Yield << " | ";
+			
+			Yield = Yield * GammaEff;
+
+			outfile << "Coincident gamma rays: " << std::setw(8) << Yield << " |\n";
 
 		}
-	}
-	
-	TSpline3 *yield = new TSpline3("Yield vs theta",Theta,Yield,clx->Probabilities.size());
 
-	return yield;
+		outfile << "\n\n";
+
+	}
+
+	outfile.close();
 
 }
 
