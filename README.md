@@ -16,10 +16,12 @@ Alternatively, you can just include the two lines above in your rootlogon.C file
 
 In order to compile the TCLX libraries, use the makefile. This has been shamelessly modified from the [GRSISort](https://github.com/GRIFFINCollaboration/GRSISort) makefile, and hence looks very similar.
 
-Once the libTCLX.so library has been compiled, one can simply load it in ROOT:
-> .L libTCLX.so 
+Once the libTExperiment.so library has been compiled, one can simply load it in ROOT:
+> .L libTExperiment.so 
 
 Or alternatively in your rootlogon file.
+
+It can also be included in a macro, for example in the Run.C macro included.
 
 # Running the TCLX code
 
@@ -103,6 +105,10 @@ Which will print them to file. Alternatively, if a graphical representation is a
 > myclx->StateCrossSections(1)->Draw();
 
 Will draw a TSpline3 of your cross section. Again note that the indices here are different from those in the input file.
+
+# TExperiment
+
+The TExperiment class is used to turn our TCLX outputs into some nice, meaningful information. The primary use is to turn the probabilities and cross-sections calculated by TCLX into yields that might be expected over the course of an experiment. Examples are given in Run.C.
 
 # Defaults/assumptions/things not yet implemented
 
