@@ -130,6 +130,7 @@ class TExperiment {
 		//*******************************************************************//
 		void AddBAMBINO(Int_t sepdwn=30, Int_t sepup=30, Option_t *opt="");		
 
+		void AddSPICE(Int_t sepdwn=42);
 
 		//********************************************//
 		//	This function will print the yields,
@@ -142,6 +143,18 @@ class TExperiment {
 #endif
 
 #ifdef TExperiment_cxx
+
+void TExperiment::AddSPICE(Int_t sepdwn)
+{
+	
+	det_cov_theta_min.clear(); 
+	det_cov_theta_max.clear(); 
+	Double_t thetamin = TMath::RadToDeg() * TMath::ATan( 11. / sepdwn);
+	Double_t thetamax = TMath::RadToDeg() * TMath::ATan( 35. / sepdwn);
+	det_cov_theta_min.push_back(thetamin);
+	det_cov_theta_max.push_back(thetamax);
+
+}
 
 
 void TExperiment::AddBAMBINO(Int_t sepdwn, Int_t sepup, Option_t *opt)
