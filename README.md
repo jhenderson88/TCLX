@@ -110,6 +110,22 @@ Will draw a TSpline3 of your cross section. Again note that the indices here are
 
 The TExperiment class is used to turn our TCLX outputs into some nice, meaningful information. The primary use is to turn the probabilities and cross-sections calculated by TCLX into yields that might be expected over the course of an experiment. Examples are given in Run.C.
 
+After one has performed a TCLX calculation using TCLX *myclx:
+
+> TExperiment *exp = new TExperiment();
+
+> exp->SetBeamIntensity(1000); // 1000 pps
+
+> exp->SetTargetDensity(2); // 2 mg/cm2
+
+> exp->SetExperimentLength(5); // 5 days
+
+> exp->GrabCLX(myclx);
+
+> exp->PlotYieldLab(1)->Draw(); 
+
+... will draw the yields vs theta, resulting from a 5 day experiment with a 1000-pps intensity beam, impinged upon a 2 mg/cm2 target.
+
 # Defaults/assumptions/things not yet implemented
 
 Currently, the default is for particle excitation. If you want to do target excitation, enter "t" as the second option for the GrabData function.
