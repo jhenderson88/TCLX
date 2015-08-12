@@ -65,6 +65,8 @@ This is all of the information the code needs, and can be passed simply as:
 
 Where "v" is the verbose option.
 
+Two example input files are included with the distribution.
+
 ## Input from the terminal
 
 This is not recommended for large calculations (the probability of a mistake tends to 1), but can be done, as follows:
