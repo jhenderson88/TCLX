@@ -122,7 +122,9 @@ class TExperiment {
 			det_cov_theta_min.clear(); 
 			det_cov_theta_max.clear(); 
 		}
-		
+		void AddBAMBINO(Int_t sepdwn=30, Int_t sepup=30, Option_t *opt="");		
+
+
 		//********************************************//
 		//	This function will print the yields,
 		//	separated by the included particle
@@ -134,6 +136,37 @@ class TExperiment {
 #endif
 
 #ifdef TExperiment_cxx
+
+
+void TExperiment::AddBAMBINO(Int_t sepdwn, Int_t sepup, Option_t *opt)
+{
+
+	det_cov_theta_min.clear(); 
+	det_cov_theta_max.clear(); 
+	
+	bool UpStreamOnly = false;
+	bool DownStreamOnly = false;
+	if(strncmp(opt,"u",1)==0)
+		UpStreamOnly = true;
+	if(strncmp(opt,"d",1)==0)
+		DownStreamOnly = true;
+
+	if(DownStreamOnly || (!DownStreamOnly && !UpStreamOnly))
+	{
+		Double_t thetamin = TMath::RadToDeg() * TMath::ATan( 11. / sepdwn);
+		Double_t thetamax = TMath::RadToDeg() * TMath::ATan( 35. / sepdwn);
+		det_cov_theta_min.push_back(thetamin);
+		det_cov_theta_max.push_back(thetamax);
+	}
+	if(UpStreamOnly || (!DownStreamOnly && !UpStreamOnly))
+	{
+		Double_t thetamax = 180. - TMath::RadToDeg() * TMath::ATan( 11. / sepdwn);
+		Double_t thetamin = 180. - TMath::RadToDeg() * TMath::ATan( 35. / sepdwn);
+		det_cov_theta_min.push_back(thetamin);
+		det_cov_theta_max.push_back(thetamax);
+	}
+
+}
 
 TGraph* TExperiment::TigressEfficiency(Int_t N_Detectors)
 {
