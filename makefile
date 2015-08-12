@@ -11,7 +11,7 @@ CPP = clang++
 CXX = clang++
 else
 CFLAGS += -Wl,--no-as-needed
-SHAREDSWITCH = -shared -Wl, -soname
+SHAREDSWITCH = -shared -Wl,-soname,
 CPP=g++
 endif
 COMPILESHARED = $(CPP) $(LFLAGS) $(SHAREDSWITCH)#NO ENDING SPACE
