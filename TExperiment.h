@@ -122,6 +122,12 @@ class TExperiment {
 			det_cov_theta_min.clear(); 
 			det_cov_theta_max.clear(); 
 		}
+		//*******************************************************************//
+		//	Predefined BAMBINO detectors. Defaults are set to the 
+		//	nominal distances (30 mm up and down stream). Options
+		//	"u" and "d" will result in ONLY the up and downstream 
+		//	detectors being used, respectively.
+		//*******************************************************************//
 		void AddBAMBINO(Int_t sepdwn=30, Int_t sepup=30, Option_t *opt="");		
 
 
