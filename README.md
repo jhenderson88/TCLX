@@ -116,7 +116,7 @@ Currently, the default is for particle excitation. If you want to do target exci
 
 As of now, magnetic transitions are not included. They will be, once I get around to it.
 
-All cross sections are given in b/sr.
+All differential cross sections are given in b/sr. Cross sections are given in b.
 
 # CoulEx information
 
