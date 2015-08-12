@@ -150,7 +150,7 @@ class TCLX {
 
 		TSpline3* StateProbability(Int_t State); // Creates a TSpline3 containing the probabilities vs theta for a given state
 
-		TGraph* StateCrossSection(Int_t State);	// Creates a TSpline3 containing the cross-sections (b/sr) vs theta for a given state
+		TSpline3* StateCrossSection(Int_t State);	// Creates a TSpline3 containing the cross-sections (b/sr) vs theta for a given state
 
 		TSpline3* Rutherford(); // Grabs the Rutherford from TReactions and creates a TSpline3
 
@@ -663,7 +663,7 @@ TSpline3* TCLX::Rutherford()
 //	for a given state
 //*****************************************//
 
-TGraph* TCLX::StateCrossSection(Int_t State)
+TSpline3* TCLX::StateCrossSection(Int_t State)
 {
 
 	if(State >= N_States || State < 0){
@@ -683,17 +683,14 @@ TGraph* TCLX::StateCrossSection(Int_t State)
 	{
 		Prob = Probabilities.at(i);		
 
-		for(int j=0;j<N_States;j++)
-		{
-			Double_t ruth = reaction->EvalRutherfordLevel((Theta_Min+i*step),level_E.at(j));
-			CS[i] = Prob[State] * ruth;
-			Theta[i] = Theta_Min + i*step;
-		}
+		Double_t ruth = reaction->EvalRutherfordLevel((Theta_Min+i*step),level_E.at(State));
+		CS[i] = Prob[State] * ruth;
+		Theta[i] = Theta_Min + i*step;
 	}
 
 	char sname[32];
 	sprintf(sname,"CrossSection_%i",State);
-	TGraph *CSSpline = new TGraph(Probabilities.size(),Theta,CS);
+	TSpline3 *CSSpline = new TSpline3(sname,Theta,CS,Probabilities.size());
 
 	return CSSpline;
 	

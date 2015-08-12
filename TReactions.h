@@ -21,7 +21,7 @@
 #include <Math/SpecFunc.h>
 #include <TCanvas.h>
 
-//************************************//
+//*****************************************//
 //	TReactions class includes a load
 //	of nuclear definitions, such as
 //	A and Z, as well as some kinematic
@@ -30,7 +30,7 @@
 //	Also included are the Wigner 3j 
 //	symbols, and the Rutherford
 //	cross section
-//************************************//
+//*****************************************//
 
 class TReactions {
 
