@@ -10,8 +10,8 @@
 
 {
 
-    gSystem->Load("libMathMore.so");
-    gSystem->Load("libMathCore.so");
+    	gSystem->Load("libMathMore.so");
+    	gSystem->Load("libMathCore.so");
 	gSystem->Load("libTExperiment.so");
 
 	TCLX *myclx = new TCLX();
@@ -25,6 +25,5 @@
 	exp->SetExperimentLength(5);
 	exp->GrabCLX(myclx);
 	exp->PlotYieldLab(1)->Draw();
-
 
 }
