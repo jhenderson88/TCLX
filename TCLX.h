@@ -688,8 +688,8 @@ TSpline3* TCLX::StateCrossSection(Int_t State)
 		Theta[i] = Theta_Min + i*step;
 	}
 
-	char sname[32];
-	sprintf(sname,"CrossSection_%i",State);
+	char sname[64];
+	sprintf(sname,"DifferentialCrossSection_%i",State);
 	TSpline3 *CSSpline = new TSpline3(sname,Theta,CS,Probabilities.size());
 
 	return CSSpline;
