@@ -895,7 +895,7 @@ TVectorD TCLX::Integration(Double_t theta)
 			for(int i=0;i<N_States;i++)
 				TotalProbability = TotalProbability + StateProbabilities[i];
 
-			if(abs(TotalProbability - 1) > abs(ABW))
+			if(fabs(TotalProbability - 1) > fabs(ABW))
 				ABW = TotalProbability - 1.0;
 
 		}
@@ -993,7 +993,7 @@ std::vector<TMatrixD> TCLX::ComputeAmpDerivativeMatrices(std::vector<TMatrixD> A
 
 						Int_t InitialSubstate = MRange[MR][1] + m; // Grab initial substate (valid within multipolarity conditions)
 						
-						Int_t MuAbs = (Int_t)(abs(MagneticSubstatesCatalogue.at(InitialSubstate) - MagneticSubstatesCatalogue.at(l))); // Determine ang. mom. difference between initial and final substates
+						Int_t MuAbs = (Int_t)(fabs(MagneticSubstatesCatalogue.at(InitialSubstate) - MagneticSubstatesCatalogue.at(l))); // Determine ang. mom. difference between initial and final substates
 
 						Double_t Real_RC = (std::real(Q_Matrix.at(MuAbs))*RealEx - std::imag(Q_Matrix.at(MuAbs))*ImagEx) * Zeta[NZ]; // Calculate the real initial part
 						Double_t Imag_RC = (std::real(Q_Matrix.at(MuAbs))*ImagEx + std::imag(Q_Matrix.at(MuAbs))*RealEx) * Zeta[NZ]; // ... and the imaginary initial part

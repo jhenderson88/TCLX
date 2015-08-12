@@ -72,6 +72,7 @@ class TReactions {
 			if(i==1) return Tar_Z;
 			if(i==2) return Proj_A;
 			if(i==3) return Proj_Z;
+			return 0;
 		}
 
 		Double_t GetElab() { return Elab; } // Grab lab energy

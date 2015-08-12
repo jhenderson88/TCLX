@@ -1,6 +1,19 @@
 CFLAGS = -std=c++0x -O2  -I$(PWD) -g `root-config --cflags`
-SHAREDSWITCH = -shared -Wl,-soname,#NO ENDING SPACE
-CPP = g++
+
+PLATFORM = $(shell uname)
+
+ifeq ($(PLATFORM),Darwin)
+CFLAGS += -DOS_DARWIN -DHAVE_ZLIB
+CFLAGS += -I/opt/X11/include -Qunused-arguments
+LFLAGS = -dynamiclib -undefined dynamic_lookup -single_module
+SHAREDSWITCH = -install_name
+CPP = clang++
+CXX = clang++
+else
+CFLAGS += -Wl,--no-as-needed
+SHAREDSWITCH = -shared -Wl, -soname
+CPP=g++
+endif
 COMPILESHARED = $(CPP) $(LFLAGS) $(SHAREDSWITCH)#NO ENDING SPACE
 
 CFLAGS += -fPIC

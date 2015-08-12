@@ -714,7 +714,7 @@ void TCLX::PrintCrossSections(const char *filename)
 	Double_t step = (Theta_Max - Theta_Min)/(Probabilities.size()-1);
 
 	printf("Steps: %f\n",step);
-	printf("Prob size: %i\n",Probabilities.size());
+	printf("Prob size: %i\n",(Int_t)Probabilities.size());
 
 	ofstream outfile;
 	outfile.open(filename);	
