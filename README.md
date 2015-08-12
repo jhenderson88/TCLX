@@ -6,6 +6,12 @@ TCLX is a C++ Coulomb excitation code based on the Fortran CLX code (written by 
 
 TCLX requires that the MathMore ROOT libraries are compiled on your machine. These include a number of GSL functions, which simplifies things considerably. Instructions on compilation of ROOT with the MathMore libraries can be found online, [here](https://root.cern.ch/drupal/content/installing-root-source).
 
+You can check if the MathMore libraries are compiled with your version of ROOT by:
+
+> root-config --features
+
+This will list the features, which should include mathmore.
+
 Additionally, in order to use the MathMore libraries, they must be loaded on startup:
 
 > gSystem->Load("libMathMore.so");
