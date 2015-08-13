@@ -206,60 +206,133 @@ TGraph* TExperiment::PlotCrossSectionLab(Int_t State)
 TGraph* TExperiment::PlotYieldLab(Int_t State)
 {
 
+	TGraph *yield;
+
 	std::vector<TVectorD> Probabilities;
 	if(clx->E_Loss_inc) 
-		Probabilities = clx->ELossProbabilities.at(0);
-	else
-		Probabilities = clx->Probabilities;
-
-	TVectorD Prob;	
-	Prob.ResizeTo(clx->N_States);
-
-	Double_t CS[Probabilities.size()];
-	Double_t Theta[Probabilities.size()];
-	Double_t Yield[Probabilities.size()];
-
-	if(!TargetDensity || !BeamIntensity || !ExperimentLength)
-	{
-		printf("Experiment details not set!\n");
-	}
-	else
 	{
 
+		Double_t Theta[clx->ELossProbabilities.at(0).size()];
+		Double_t Yield[clx->ELossProbabilities.at(0).size()];
+
+		for(int i=0;i<clx->ELossProbabilities.at(0).size();i++)
+			Yield[i] = 0;
+	
 		Double_t TargetNucleons = 0.0006022 * TargetDensity / reaction->Tar_A; // Target nucleon density (Avg. const * size of a barn * target density / target mass)
 
-		Double_t step = (clx->Theta_Max - clx->Theta_Min)/Probabilities.size();
+		TargetNucleons = TargetNucleons / (Double_t)clx->ELossProbabilities.size();
 
-		Double_t Tau = reaction->Proj_A / reaction->Tar_A;
-
-		for(unsigned int i=0;i<Probabilities.size();i++)
+		for(int de = 0; de<clx->ELossProbabilities.size(); de++)
 		{
-			Prob = Probabilities.at(i);		
+			Probabilities = clx->ELossProbabilities.at(de);
+			TVectorD Prob;	
+			Prob.ResizeTo(clx->N_States);
 
-			Double_t ruth = reaction->EvalRutherfordLevel((clx->Theta_Min+i*step),clx->level_E.at(State));
-			Double_t thetacm = clx->Theta_Min + i*step;
-			Double_t thetalab = TMath::RadToDeg() * TMath::ATan( (TMath::Sin(TMath::DegToRad() * thetacm) / ( ( TMath::Cos(TMath::DegToRad() * thetacm) + Tau ) )));//thetacm
-			if(thetalab > 0)
-				Theta[i] = thetalab;
+			reaction->SetElab(clx->TargetEnergies.at(de));
+
+			if(!TargetDensity || !BeamIntensity || !ExperimentLength)
+			{
+				printf("Experiment details not set!\n");
+			}
 			else
-				Theta[i] = thetalab + 180;
+			{
 
-			Double_t tempCS = Prob[State] * ruth;
-			CS[i] = tempCS * 2 * TMath::Pi() * TMath::Sin(TMath::DegToRad() * Theta[i]) * (TMath::DegToRad());
-			Double_t tempyield = CS[i] * TargetNucleons * BeamIntensity * ExperimentLength * 60 * 60 * 24;
-			Yield[i] = tempyield;
 
+				Double_t step = (clx->Theta_Max - clx->Theta_Min)/Probabilities.size();
+
+				Double_t Tau = reaction->Proj_A / reaction->Tar_A;
+
+				for(unsigned int i=0;i<Probabilities.size();i++)
+				{
+					Prob = Probabilities.at(i);		
+
+					Double_t ruth = reaction->EvalRutherfordLevel((clx->Theta_Min+i*step),clx->level_E.at(State));
+					Double_t thetacm = clx->Theta_Min + i*step;
+					Double_t thetalab = TMath::RadToDeg() * TMath::ATan( (TMath::Sin(TMath::DegToRad() * thetacm) / ( ( TMath::Cos(TMath::DegToRad() * thetacm) + Tau ) )));//thetacm
+					if(thetalab > 0)
+						Theta[i] = thetalab;
+					else
+						Theta[i] = thetalab + 180;
+
+					Double_t tempCS = Prob[State] * ruth * 2 * TMath::Pi() * TMath::Sin(TMath::DegToRad() * Theta[i]) * (TMath::DegToRad());
+					Double_t tempyield = tempCS * TargetNucleons * BeamIntensity * ExperimentLength * 60 * 60 * 24;
+					Yield[i] += (Double_t)(tempyield);
+
+				}
+			}
 		}
+	
+		yield = new TGraph(Probabilities.size(),Theta,Yield);
+	  	yield->SetTitle(Form("Experiment yield - Incident E_{Beam}; #theta_{lab} [deg]; Yield;"));
+		yield->GetYaxis()->SetTitleOffset(1.2);
+		yield->GetYaxis()->SetTitleSize(0.04);
+		yield->GetXaxis()->SetTitleSize(0.04);
+		yield->GetYaxis()->CenterTitle();
+		yield->GetXaxis()->CenterTitle();
+
+		return yield;
+
 	}
+	else if(!clx->E_Loss_inc)
+	{
+		Probabilities = clx->Probabilities;
+
+		TVectorD Prob;	
+		Prob.ResizeTo(clx->N_States);
+
+		Double_t CS[Probabilities.size()];
+		Double_t Theta[Probabilities.size()];
+		Double_t Yield[Probabilities.size()];
+
+		for(int i=0;i<Probabilities.size();i++)
+			Yield[i]=0;
+
+		if(!TargetDensity || !BeamIntensity || !ExperimentLength)
+		{
+			printf("Experiment details not set!\n");
+		}
+		else
+		{
+
+			Double_t TargetNucleons = 0.0006022 * TargetDensity / reaction->Tar_A; // Target nucleon density (Avg. const * size of a barn * target density / target mass)
+
+			Double_t step = (clx->Theta_Max - clx->Theta_Min)/Probabilities.size();
+
+			Double_t Tau = reaction->Proj_A / reaction->Tar_A;
+
+			for(unsigned int i=0;i<Probabilities.size();i++)
+			{
+				Prob = Probabilities.at(i);		
+
+
+				Double_t ruth = reaction->EvalRutherfordLevel((clx->Theta_Min+i*step),clx->level_E.at(State));
+				Double_t thetacm = clx->Theta_Min + i*step;
+				Double_t thetalab = TMath::RadToDeg() * TMath::ATan( (TMath::Sin(TMath::DegToRad() * thetacm) / ( ( TMath::Cos(TMath::DegToRad() * thetacm) + Tau ) )));//thetacm
+				if(thetalab > 0)
+					Theta[i] = thetalab;
+				else
+					Theta[i] = thetalab + 180;
+
+				Double_t tempCS = Prob[State] * ruth;
+				CS[i] = tempCS * 2 * TMath::Pi() * TMath::Sin(TMath::DegToRad() * Theta[i]) * (TMath::DegToRad());
+				Double_t tempyield = CS[i] * TargetNucleons * BeamIntensity * ExperimentLength * 60 * 60 * 24;
+				Yield[i] = tempyield;
+
+			}
+		}
 	
-	TGraph *yield = new TGraph(Probabilities.size(),Theta,Yield);
-  	yield->SetTitle(Form("Experiment yield - Incident E_{Beam}; #theta_{lab} [deg]; Yield;"));
-	yield->GetYaxis()->SetTitleOffset(1.2);
-	yield->GetYaxis()->SetTitleSize(0.04);
-	yield->GetXaxis()->SetTitleSize(0.04);
-	yield->GetYaxis()->CenterTitle();
-	yield->GetXaxis()->CenterTitle();
-	
+		yield = new TGraph(Probabilities.size(),Theta,Yield);
+	  	yield->SetTitle(Form("Experiment yield - Incident E_{Beam}; #theta_{lab} [deg]; Yield;"));
+		yield->GetYaxis()->SetTitleOffset(1.2);
+		yield->GetYaxis()->SetTitleSize(0.04);
+		yield->GetXaxis()->SetTitleSize(0.04);
+		yield->GetYaxis()->CenterTitle();
+		yield->GetXaxis()->CenterTitle();
+
+		return yield;
+
+	}
+
 	return yield;
 
 }
@@ -346,6 +419,9 @@ TGraph* TExperiment::PlotYieldLabGamma(Int_t State, Int_t N_Detectors)
 		Double_t CS[Probabilities.size()];
 		Double_t Theta[Probabilities.size()];
 		Double_t Yield[Probabilities.size()];
+
+		for(int i=0;i<Probabilities.size();i++)
+			Yield[i]=0;
 
 		Double_t GammaEff =	TigressEfficiency(N_Detectors)->Eval(clx->level_E.at(State)) / 100;
 

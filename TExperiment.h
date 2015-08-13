@@ -186,8 +186,8 @@ void TExperiment::AddBAMBINO(Int_t sepdwn, Int_t sepup, Option_t *opt)
 	}
 	if(UpStreamOnly || (!DownStreamOnly && !UpStreamOnly))
 	{
-		Double_t thetamax = 180. - TMath::RadToDeg() * TMath::ATan( 11. / sepdwn);
-		Double_t thetamin = 180. - TMath::RadToDeg() * TMath::ATan( 35. / sepdwn);
+		Double_t thetamax = 180. - TMath::RadToDeg() * TMath::ATan( 11. / sepup);
+		Double_t thetamin = 180. - TMath::RadToDeg() * TMath::ATan( 35. / sepup);
 		det_cov_theta_min.push_back(thetamin);
 		det_cov_theta_max.push_back(thetamax);
 	}
@@ -210,15 +210,17 @@ TGraph* TExperiment::TigressEfficiency(Int_t N_Detectors)
 void TExperiment::PrintYieldsByDetector(Int_t N_Detectors)
 {
 
-	TVectorD Prob;
-	Prob.ResizeTo(clx->N_States);
 
 	std::ofstream outfile;
 	outfile.open("TCLX_Detection_Yields.txt");
 
-	Double_t step = (clx->Theta_Max - clx->Theta_Min)/clx->Probabilities.size();
 	Double_t Tau = reaction->Proj_A / reaction->Tar_A;
 	Double_t TargetNucleons = 0.0006022 * TargetDensity / reaction->Tar_A; // Target nucleon density (Avg. const * size of a barn * target density / target mass)
+
+	if(clx->E_Loss_inc)
+			outfile << "Energy loss in target included\n\n";
+	else if(!clx->E_Loss_inc)
+			outfile << "Energy loss in target not included\n\n";
 
 	for(int i=0;i<det_cov_theta_min.size();i++)
 	{
@@ -231,39 +233,97 @@ void TExperiment::PrintYieldsByDetector(Int_t N_Detectors)
 		for(int k=0;k<clx->N_States;k++)
 		{
 
-			outfile << "State " << (k+1) << " J: " << std::setw(3) << clx->level_J.at(k) << " | State E: " << std::setw(8) << clx->level_E.at(k) << " MeV |";
-
-			Double_t tempCS = 0;
-			Double_t CS = 0;
-			Double_t Yield = 0;
-			Double_t GammaEff =	TigressEfficiency(N_Detectors)->Eval(clx->level_E.at(k)) / 100;
-
-			for(int j=0;j<clx->Probabilities.size();j++)
+			if(clx->E_Loss_inc)
 			{
-				Prob = clx->Probabilities.at(j);		
-				Double_t ruth = reaction->EvalRutherfordLevel((clx->Theta_Min+j*step),clx->level_E.at(k));
-				Double_t thetacm = clx->Theta_Min + j*step;
-				Double_t thetalab = TMath::RadToDeg() * TMath::ATan( (TMath::Sin(TMath::DegToRad() * thetacm) / ( ( TMath::Cos(TMath::DegToRad() * thetacm) + Tau ) )));//thetacm
 
-				if(thetalab > 0)
-					thetalab = thetalab;
-				else
-					thetalab = thetalab + 180;
+				Double_t TgtNuc = TargetNucleons / (Double_t)clx->ELossProbabilities.size();
 
-				if(thetalab > MinTheta && thetalab < MaxTheta){
-					tempCS = Prob[k] * ruth * 2 * TMath::Pi() * TMath::Sin(TMath::DegToRad() * thetalab) * (TMath::DegToRad());
-					CS = CS + tempCS;
-				}
-			}
-
-			Yield = CS * TargetNucleons * BeamIntensity * ExperimentLength * 60 * 60 * 24;
-	
-			outfile << " Particles detected: " << std::setw(12) << Yield << " | ";
+				std::vector<TVectorD> Probabilities;
 			
-			Yield = Yield * GammaEff;
+				outfile << "State " << (k+1) << " J: " << std::setw(3) << clx->level_J.at(k) << " | State E: " << std::setw(8) << clx->level_E.at(k) << " MeV |";
 
-			outfile << "Coincident gamma rays: " << std::setw(8) << Yield << " |\n";
+				Double_t tempCS = 0;
+				Double_t CS = 0;
+				Double_t Yield = 0;
+				Double_t GammaEff =	TigressEfficiency(N_Detectors)->Eval(clx->level_E.at(k)) / 100;
 
+
+				for(int de=0;de<clx->ELossProbabilities.size();de++)
+				{
+					
+					Probabilities = clx->ELossProbabilities.at(de);
+					TVectorD Prob;
+					Prob.ResizeTo(clx->N_States);
+					reaction->SetElab(clx->TargetEnergies.at(de));
+					Double_t step = (clx->Theta_Max - clx->Theta_Min)/Probabilities.size();
+
+					for(int j=0;j<Probabilities.size();j++)
+					{
+						Prob = Probabilities.at(j);		
+						Double_t ruth = reaction->EvalRutherfordLevel((clx->Theta_Min+j*step),clx->level_E.at(k));
+						Double_t thetacm = clx->Theta_Min + j*step;
+						Double_t thetalab = TMath::RadToDeg() * TMath::ATan( (TMath::Sin(TMath::DegToRad() * thetacm) / ( ( TMath::Cos(TMath::DegToRad() * thetacm) + Tau ) )));//thetacm
+
+						if(thetalab > 0)
+							thetalab = thetalab;
+						else
+							thetalab = thetalab + 180;
+
+						if(thetalab > MinTheta && thetalab < MaxTheta){
+							tempCS = Prob[k] * ruth * 2 * TMath::Pi() * TMath::Sin(TMath::DegToRad() * thetalab) * (TMath::DegToRad());
+							CS = CS + tempCS;
+						}
+					}
+				}
+
+				Yield = CS * TgtNuc * BeamIntensity * ExperimentLength * 60 * 60 * 24;
+	
+				outfile << " Particles detected: " << std::setw(12) << Yield << " | ";
+			
+				Yield = Yield * GammaEff;
+
+				outfile << "Coincident gamma rays: " << std::setw(8) << Yield << " |\n";
+
+			}
+			else if(!clx->E_Loss_inc)
+			{
+
+				outfile << "State " << (k+1) << " J: " << std::setw(3) << clx->level_J.at(k) << " | State E: " << std::setw(8) << clx->level_E.at(k) << " MeV |";
+
+				TVectorD Prob;
+				Prob.ResizeTo(clx->N_States);
+				Double_t tempCS = 0;
+				Double_t CS = 0;
+				Double_t Yield = 0;
+				Double_t GammaEff =	TigressEfficiency(N_Detectors)->Eval(clx->level_E.at(k)) / 100;
+				Double_t step = (clx->Theta_Max - clx->Theta_Min)/clx->Probabilities.size();
+
+				for(int j=0;j<clx->Probabilities.size();j++)
+				{
+					Prob = clx->Probabilities.at(j);		
+					Double_t ruth = reaction->EvalRutherfordLevel((clx->Theta_Min+j*step),clx->level_E.at(k));
+					Double_t thetacm = clx->Theta_Min + j*step;
+					Double_t thetalab = TMath::RadToDeg() * TMath::ATan( (TMath::Sin(TMath::DegToRad() * thetacm) / ( ( TMath::Cos(TMath::DegToRad() * thetacm) + Tau ) )));//thetacm
+
+					if(thetalab > 0)
+						thetalab = thetalab;
+					else
+						thetalab = thetalab + 180;
+
+					if(thetalab > MinTheta && thetalab < MaxTheta){
+						tempCS = Prob[k] * ruth * 2 * TMath::Pi() * TMath::Sin(TMath::DegToRad() * thetalab) * (TMath::DegToRad());
+						CS = CS + tempCS;
+					}
+				}
+
+				Yield = CS * TargetNucleons * BeamIntensity * ExperimentLength * 60 * 60 * 24;
+	
+				outfile << " Particles detected: " << std::setw(12) << Yield << " | ";
+			
+				Yield = Yield * GammaEff;
+
+				outfile << "Coincident gamma rays: " << std::setw(8) << Yield << " |\n";
+			}
 		}
 
 		outfile << "\n\n";
