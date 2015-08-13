@@ -139,6 +139,13 @@ class TExperiment {
 		//********************************************//
 		void PrintYieldsByDetector(Int_t N_Detectors=12);
 
+
+		//*****************************************************************//
+		//	Plots for use with the dE functions in TCLX
+		//*****************************************************************//
+
+		TGraph* PlotCrossSectionLabdE(Int_t State, Int_t x); // x corresponds to the step in X through the target. Currently there are 10 steps through the target, so 0<=x<10
+
 };
 #endif
 

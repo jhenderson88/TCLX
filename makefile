@@ -34,9 +34,9 @@ NO_COLOR=\033[m
 FIN_COLOR=\033[3;34m
 FIN_OBJ_COLOR=\033[3;32m
 
-OBJECTS = TCLX.o TCLX_DataInput.o TReactions.o TExperiment.o TCLX_Dict.o 
+OBJECTS = TCLX.o TCLX_DataInput.o TReactions.o TExperiment.o TDeDx.o TCLX_Dict.o 
 INCDIR = $(PWD)
-DICTOBJ = $(INCDIR)/TCLX.h $(INCDIR)/TCLX_DataInput.h $(INCDIR)/TReactions.h $(INCDIR)/TExperiment.h
+DICTOBJ = $(INCDIR)/TCLX.h $(INCDIR)/TCLX_DataInput.h $(INCDIR)/TReactions.h $(INCDIR)/TExperiment.h $(INCDIR)/TDeDx.h
 DICTNAM = TCLX
 
 all: libTExperiment.so

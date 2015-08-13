@@ -23,6 +23,7 @@
 
 #include "TCLX_DataInput.h" // The TCLX_DataInput class grabs the data from the input file, in order to be processed by the TCLX class.
 #include "TReactions.h" // The TReactions class includes a load of useful reactions (duh) information, such as Rutherford cross sections, as well as a load of information defining the nuclear properties
+#include "TDeDx.h" // The TDeDx class is based on the elast.C code produced at Oakridge and will be used to account for energy loss in the target
 
 
 //**********************************************//
@@ -204,7 +205,26 @@ class TCLX {
 		}
 		void SetupVariables(); // This needs to be run after setting up the information and before performing the integration
 
-		//ClassDef(TCLX,1);
+		//**********************************************//
+		// 	Here, we're going to initialise and use
+		//	the TDeDx class to incorporate energy
+		//	losses into our CoulEx calculation.
+		//**********************************************//
+
+		bool E_Loss_inc;
+		TDeDx *dEdX;
+		void SetupEnergyLoss(Double_t target_thickness);
+		Double_t TargetELoss;
+
+		std::vector<Double_t> TargetEnergies;
+		std::vector<Double_t> TargetStoppingPowers;
+		void SetupdEvectors(Double_t target_thickness, Int_t NSteps);
+
+		std::vector< std::vector<TVectorD> > ELossProbabilities; // These are the excitation probabilities
+
+		void SetBeamEnergyTargetCenter(Double_t target_thickness);
+
+		void PerformCalculationWithELoss(Double_t target_thickness, Int_t NSteps=10);
 
 };
 
@@ -221,6 +241,8 @@ class TCLX {
 
 void TCLX::GrabData(const char* filename, Option_t *opt, Option_t *opt_bt)
 {
+
+	E_Loss_inc = false;
 
 	// Check options and change flags accordingly
 	verbose = false;
@@ -888,6 +910,8 @@ void TCLX::SetThetaRange()
 void TCLX::SetNStatesMaxLambda(Int_t n, Int_t maxlambda)
 {
 
+	E_Loss_inc = false;
+
 	N_States = n;
 	MaxLambda = maxlambda;
 
@@ -912,6 +936,8 @@ void TCLX::SetNStatesMaxLambda(Int_t n, Int_t maxlambda)
 void TCLX::SetupVariables()
 {
 
+	E_Loss_inc = false;
+
 	// Make the dipole polarization value
 	E1PolFactor = ElectricDipoleNormalization();
 
@@ -934,5 +960,94 @@ void TCLX::SetupVariables()
 
 }
 
+//**********************************************//
+//	dEdX stuff will be dealt with here
+//**********************************************//
 
+
+void TCLX::SetupEnergyLoss(Double_t target_thickness)
+{
+
+	dEdX = new TDeDx();
+	dEdX->SetTargetThickness(target_thickness);
+	dEdX->SetIncidentEnergy(reaction->Elab);
+	if(BeamExcitation)
+		dEdX->SetNuclei(reaction->Proj_A,reaction->Proj_Z,reaction->Tar_A,reaction->Tar_Z);
+	else if(!BeamExcitation)
+		dEdX->SetNuclei(reaction->Proj_A,reaction->Tar_Z,reaction->Tar_A,reaction->Proj_Z);
+
+	TargetELoss = dEdX->EnergyLoss();
+	
+}
+
+void TCLX::SetupdEvectors(Double_t target_thickness, Int_t NSteps)
+{
+
+	TargetEnergies.clear();
+	TargetStoppingPowers.clear();
+
+	SetupEnergyLoss(target_thickness);
+
+	Double_t ELossSteps = TargetELoss/NSteps;
+
+	Double_t BeamEnergy = reaction->Elab;
+
+	for(int i=0;i<NSteps;i++)
+	{		
+		SetupEnergyLoss(target_thickness * i/NSteps);
+		Double_t E = BeamEnergy - TargetELoss;
+		TargetEnergies.push_back(E);
+		TargetStoppingPowers.push_back(dEdX->DeltaE(E));
+	}
+
+}
+
+void TCLX::SetBeamEnergyTargetCenter(Double_t target_thickness)
+{
+	SetupEnergyLoss(target_thickness/2.);
+	reaction->SetElab(reaction->Elab - TargetELoss);
+}
+
+void TCLX::PerformCalculationWithELoss(Double_t target_thickness, Int_t NSteps)
+{
+
+	E_Loss_inc = true;
+
+	SetupdEvectors(target_thickness,NSteps);
+	Double_t EStop = reaction->Elab - TargetELoss;
+	Double_t BeamEnergy = reaction->Elab;
+	Double_t ELossSteps = TargetELoss/NSteps;
+
+	for(int de=0;de<TargetEnergies.size();de++)
+	{
+
+		reaction->SetElab(TargetEnergies.at(de));
+		PrepareMatrices();
+
+
+		std::vector<TVectorD> tempProbabilities; // These are the excitation probabilities
+
+		TVectorD temp; // We set up a TVectorD, this will be a temporary storage for the population probabilities so needs to be resized to allow a probability for each state (not substate)
+		temp.ResizeTo(N_States);
+
+		printf("Integration number %i of %i, between Theta = %f and Theta = %f, in steps of %f\n",(de+1),(Int_t)(TargetEnergies.size()),Theta_Min,Theta_Max,Theta_Step); // Output the theta range we're working with, just to make sure
+
+		for(Double_t i=Theta_Min; i<=Theta_Max; i=i+Theta_Step){ // Loop over the defined theta range, in the defined number of steps
+
+			temp = Integration(i); // Perform the integration for the theta value given
+			tempProbabilities.push_back(temp); // Push the resulting TVectorD into a std::vector
+			if((int)i % 1 == 0) std::cout << std::setiosflags(std::ios::fixed) << std::setprecision(3) << 100 * (i-Theta_Min)/(Theta_Max-Theta_Min) << " % complete" << "\r" << std::flush; // Progress bar - important to keep distracted
+
+		}
+		
+		ELossProbabilities.push_back(tempProbabilities); // These are the excitation probabilities
+		tempProbabilities.clear();
+	
+		printf("Integration number %i complete!!!\n",(de+1)); // SUCCESS!
+	
+	}
+
+
+
+}
 #endif
