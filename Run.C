@@ -9,7 +9,10 @@
 //*************************************************************************//
 
 {
-
+	
+	// You might find that you also need to include the following two commented lines
+	//gSystem->Load("libMatrix.so");
+	//gSystem->Load("libHist.so");
     	gSystem->Load("libMathMore.so");
     	gSystem->Load("libMathCore.so");
 	gSystem->Load("libTExperiment.so");
