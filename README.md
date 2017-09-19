@@ -14,11 +14,13 @@ This will list the features, which should include mathmore.
 
 Additionally, in order to use the MathMore libraries, they must be loaded on startup:
 
-> gSystem->Load("libMathMore.so");
+It has also been found that you might need to include:
 
-> gSystem->Load("libMathCore.so");
+> gSystem->Load("libMatrix.so");
 
-Alternatively, you can just include the two lines above in your rootlogon.C file.
+> gSystem->Load("libHist.so");
+
+Alternatively, you can just include the lines above in your rootlogon.C file.
 
 In order to compile the TCLX libraries, use the makefile. This has been shamelessly modified from the [GRSISort](https://github.com/GRIFFINCollaboration/GRSISort) makefile, and hence looks very similar.
 
