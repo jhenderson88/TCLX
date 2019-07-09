@@ -1,3 +1,7 @@
+TCLX has been superceded by Cygnus: https://github.com/jhenderson88/Cygnus
+
+It uses many of the same operations but is more streamline and considerably more functional.
+
 # Welcome to the TCLX wiki!
 
 TCLX is a C++ Coulomb excitation code based on the Fortran CLX code (written by H. Ower and modified by J. Gerl), using similar syntax and the same methodology. It uses the ROOT and GSL libraries to perform the necessary integrations. 
